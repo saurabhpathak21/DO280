@@ -1,0 +1,397 @@
+
+Welcome to DO280: Red Hat OpenShift Administration II: Operating a Production Kubernetes Cluster
+OCP 4.6
+
+
+Navdeep
+
+Nav     #deep
+
+Reading UK
+
+
+Name
+Org 		If Possible
+Experience	RHCSA or equivalent Knowledge
+Expectation	
+City/Timezone
+Hobbies		
+
+EX180	PODMAN Openshift
+
+OpenShift I: Containers & Kubernetes (DO180) course or have equivalent knowledge.
+Linux: Either attain the Red Hat Certified System Administrator certification (RHCSA), or have equivalent knowledge.
+
+vim, cp mv rm mkdir TAB TAB ssh 
+
+
+
+
+		Chapter 1:
+		
+	How Many ways we can install OCP:
+	1. UPI User Provisioned Infrastructure/Installation	Bare Metal, Manual VM
+	2. IPI Infrastructure Provisioned Installation		FullStack Automation	Azure, AWS, Vsphere , GCP, RHV
+	
+	
+	On Which Platforms we can install OCP:
+	1. PaaS
+	2. AWS
+	3. Azure	
+	4. CRC	
+
+Development: 
+3 Masters are required, those 3 masters will also be Workers
+
+Production:
+3 Masters are required, minimum 2 workers (supported)
+
+POD IP
+Service IP
+DNS
+
+
+Registry:
+
+Quay.io				Free
+docker.io			FRee
+registry.redhat.io		Paid
+registry.access.redhat.com	Free/Paid
+
+Internal Registry		OCP has Internal Registry
+
+UBI Universal Base Image  Base Image from where Custom Secure Application Images can be created
+
+Security:
+OCP does not allow a Container to run as Priviliged User 
+
+Build Automation:
+Intgrated S2i ->  Pull Source Code git, Build image, Push Image to Internal Registry, Deploy pods with Image
+
+Deploy App:
+ a. Deployment (Kubernetes)
+ b. DeploymentConfig (Openshift)
+
+GNU
+V1 -> V2 -> V3 -> V4
+
+
+Self Service: Self Healing
+
+ReplicaSet (Kubernetes)/ReplicationController (Openshift)
+Acceture APP:
+6 Pods
+
+worker1		worker2		worker3(Died)
+2		2		2
+
+3		3		0
+
+Upgraded Web Console
+
+Expose Application:
+Kubernetes: NodePort, Ingress
+Openshift: Route
+
+ELS
+
+	
+3 Load Balancers
+1. External
+2. HaProxy
+3. Internal
+
+
++
+Podman inspect
+
+skopeo inspect
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+oc create configmap db-config --from-literal=user_value=user1 --from-literal=db_value=items
+
+oc create secret generic mysql --from-literal=MYSQL_PASSWORD=mypa55 --from-literal=MYSQL_ROOT_PASSWORD=r00tpa55
+
+
+//Cluster Version
+
+oc get clusterversion
+oc describe clusterversion | less
+
+
+
+//Cluster Operators
+
+oc get clusteroperators | less
+oc describe clusteroperators image-registry
+oc get all -n openshift-console
+oc get all -n openshift-console-operator 
+oc get all -n openshift-dns
+oc get all -n openshift-dns-operator 
+
+
+
+
+			Chapter 2: 
+//Cluater Nodes
+oc get nodes
+oc describe node ip-10-0-132-247.eu-central-1.compute.internal
+oc get pods -n openshift-console-operator
+oc whoami
+oc get nodes
+oc describe node ip-10-0-133-224.eu-central-1.compute.internal | less
+oc adm top node -l node-role.kubernetes.io/worker
+oc adm top node -l node-role.kubernetes.io/wmaster 
+oc adm top node -l node-role.kubernetes.io/master
+oc adm top node 
+oc get pods -n openshift-image-registry
+
+/ Logs on Pods/Contrainers and nodes
+
+oc logs cluster-image-registry-operator-544b598bcd-8vrs4
+oc logs pod cluster-image-registry-operator-544b598bcd-8vrs4
+oc logs pod cluster-image-registry-operator-544b598bcd-8vrs4 -n openshift-image-registry
+oc logs cluster-image-registry-operator-544b598bcd-8vrs4 -n openshift-image-registry
+oc logs cluster-image-registry-operator-544b598bcd-8vrs4 -n openshift-image-registry --all-containers 
+
+
+
+
+
+
+oc get pod -n openshift-image-registry image-registry-685b449b4c-sdrwj --loglevel 9
+   OR
+oc logs image-registry-685b449b4c-sdrwj -n openshift-image-registry --tail=10
+
+// Shell in Pod
+oc exec -it -n openshift-image-registry image-registry-685b449b4c-sdrwj bash
+   OR
+oc rsh -n openshift-image-registry image-registry-685b449b4c-sdrw
+
+
+oc get nodes
+oc adm node-logs ip-10-0-132-247.eu-central-1.compute.internal --tail 4
+oc adm node-logs ip-10-0-132-247.eu-central-1.compute.internal --tail 4 -u kubelet
+oc adm node-logs ip-10-0-132-247.eu-central-1.compute.internal --tail 4 -u cri
+
+
+
+skopeo inspect docker://registry.access.redhat.com/rhscl/postgresql-96-rhel7:1
+skopeo inspect docker://registry.access.redhat.com/rhscl/postgresq-96-rhel7:1
+oc get deployment
+oc edit deployment/psql
+ oc patch deployment/psql -p '{"spec":{"template":{"spec":{"containers":[{"name":"postgresql","image":"registry.redhat.io/rhel8/postgresql-13:1"}]}}}}'
+
+
+
+inside debug pod of node
+
+oc debug node master01
+ps -ef
+ps -ef | grep kubectl
+ps -ef | grep crio
+systemctl statkubect
+systemctl state kubectl
+systemctl state kubelet
+systemctl status kubelet
+systemctl status crio
+crictl ps
+crictl ps --name openvswitch
+
+oc new-app --name postgresql-persistent --docker-image registry.redhat.io/rhel8/postgresql-12:1-43 -e POSTGRESQL_USER=redhat -e POSTGRESQL_PASSWORD=redhat123 -e POSTGRESQL_DATABASE=persistentdb
+
+oc set volumes deployment/postgresql-persistent --add --name postgresql-storage --type pvc --claim-class nfs-storage --claim-mode rwo --claim-size 10Gi --mount-path /var/lib/pgsql --claim-name postgresql-storage
+
+
+oc create configmap db-config --from-literal=user_value=user1 --from-literal=db_value=items
+
+oc create secret generic mysql --from-literal=MYSQL_PASSWORD=mypa55 --from-literal=MYSQL_ROOT_PASSWORD=r00tpa55
+
+oc set env deployment/demo --from secret/demo-secret --prefix MYSQL_
+
+password   MYSQL_PASSWORD
+
+
+SCC:
+
+			Chapter 5:
+			
+			
+
+
+Kubernetes DNS service run on service address
+ oc describe dns.operator/default
+172.30.0.10
+Add routing Table to all nodes via service (cluster.local) internal domain for kubernetes
+(cluster.local) Nothing to do with
+
+Service Network Range:
+ oc get networks.config/cluster -o jsonpath='{$.status.serviceNetwork}'
+oc get pods -n openshift-ingress
+oc rsh -n openshift-ingress router-default-6ff9ddbb9d-8hrhk
+cat /etc/resolv.conf
+
+nslookup lab.ocp.com
+
+oc debug node/master01
+cat /etc/resolv.conf
+
+oc rsh POD_NAME
+cat /etc/resolv.conf
+
+
+POD
+dig
+hosts - > resolv.conf -> coreDNS POD (service) -> forwarders -> Node resolv.conf
+	External
+	
+
+
+Kubernetes		NodePort OLD Technology, Ingress operator
+OCP			Route
+
+Expose service
+Route(FRONTEND) > directly send traffic to pods[/etc/hosts -> resolv.conf -> internal domain ->service MYSQL] -> mysql -> POD MYSQL -> 
+
+
+Netfilter: lookup of Pods
+Service Discovery: DNS
+
+
+
+
+
+
+Route/Ingress		http https tls sni
+NodePort		
+
+			Insecure Route:
+oc expose service service_name 
+
+
+			Edge Route:
+
+
+oc create route edge app2-https --service todo-http --hostname app2-https.apps.ocp4.example.com
+
+
+
+openssl genrsa --out training.key
+
+openssl req -new -subj "/C=US/ST=North Carolina/L=Raleigh/O=Red Hat/CN=edge2-https.apps.ocp4.example.com" -key training.key -out training.csr
+
+openssl x509 -req -in training.csr -signkey training.key -out training.crt
+
+oc create route edge edge2-https --service app1 --hostname edge2-https.apps.ocp4.example.com --key training.key  --cert training.crt
+
+
+
+
+
+
+		Chapter 6:
+
+QoS: Pod
+
+cpu/memory
+			requests		limits
+BestEffort		No			NO		Best Node Maximum Resources
+Burstable		YES/NO			YES
+Guranteed		Same Resources		Same Resources
+
+Node  Select:
+
+developer:  nodeSelctor env
+Project Admin: nodeselctor on Project/namespace
+
+conflict:
+project   master03	
+deployment  master02
+
+deployemnt nodeslector cannot override project nodeslector
+
+Limit Ranges:
+defaultRequest — is how much CPU/Memory will be given to Container, if it doesn't specify it's own value
+default — is default limit for amount of CPU/Memory for Container, if it doesn't specify it's own value
+max — is maximum limit for amount of CPU/Memory that Container can ask for. I.e. it can't set it's own limit more than that
+min — is minimum limit amount of CPU/Memory that Container can ask for. I.e. it can't set it's own limit less than that
+
+
+ResourceQuota
+in Project:
+Based on numbers of resources		count-quota		services=2,pods=10,rc=2,route=1
+Based on Compute resource		compute-quota		CPU= Memory Storage
+
+
+	ProjectQuota				ClusterQuota
+	resourceQuota				Normal use case for 1. user
+
+1000m  1 core
+
+M 1000
+Mi 1024
+
+
+
+Difference Deployment and DeploymentConfig
+
+https://docs.openshift.com/container-platform/4.6/applications/deployments/what-deployments-are.html#deployments-comparing-deploymentconfigs_what-deployments-are
+
+
+
+
+
+candidate			Development
+fast				QA,Test
+stable				Production
+
+
+
+
+
+All Nodes		DNS		POD(coredns)	to Application Pods(php-helloworld,mysql)		
+All Nodes		logging		POD(monitor)	APpication logs need captured
+All Nodes		Registry	POD
+
+
+
+
+
+1. Setup label env=dev/env=prod on nodes of dev and Prod
+2. Project annotate 
+      oc edit deployment/app_dev           nodeSelector:
+                                             env: dev
+                                            resources:
+                                              requests:
+                                                cpu:
+                                                memory:
+                                              limits:
+3. Define LimitRange
+  if pods taking too much resources, check application image
+
+
+
+		Kubernetes			Openshift
+		Deployment			DeploymentConfig
+		Replicaset			ReplicationController
+		Ingress				Route
+
+
+
+
