@@ -1,0 +1,13 @@
+kind: EgressNetworkPolicy
+apiVersion: network.openshift.io/v1
+metadata:
+  name: egress-deny-all
+  namespece: project1
+spec:
+  egress:
+  - to:
+      cidrSelector: 0.0.0.0/0
+    type: Deny
+    #ports:
+    #- protocol: TCP
+    #  port: 8080

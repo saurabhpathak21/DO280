@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-quota
+spec:
+  hard:
+    cpu: "1300"
+    limits.cpu: 3k
+    limits.memory: 3Gi
+    memory: 1536Mi

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: count-quota
+spec:
+  hard:
+    pods: "6"
+    replicationcontrollers: "2"
+    secrets: "2"
+    services: "2"

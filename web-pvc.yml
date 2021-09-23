@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: web-pvc
+spec:
+  #storageClassName: "" # Static 
+  storageClassName: nfs-storage
+  #DYNAMIC
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
